@@ -1,0 +1,22 @@
+# Veritabanı (müşteri verisi — repoya girmesin)
+hesap.db
+hesap.db-shm
+hesap.db-wal
+
+# PyInstaller çıktıları
+build/
+dist/
+*.spec
+
+# Python önbelleği
+__pycache__/
+*.pyc
+*.pyo
+
+# Excel kaynak dosyası (kişisel veri)
+*.xls
+*.xlsx
+
+# Geçici dosyalar
+*.tmp
+*.log
