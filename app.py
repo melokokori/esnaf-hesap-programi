@@ -984,10 +984,7 @@ class App(ctk.CTk):
 # ── BAŞLANGIÇ ─────────────────────────────────────────────────
 if __name__ == "__main__":
     show_splash()
-    con   = init_db()
-    count = con.cursor().execute("SELECT COUNT(*) FROM musteriler").fetchone()[0]
-    if count == 0:
-        import_from_excel(con)
+    con = init_db()
     app = App(con)
     app.mainloop()
     con.close()
