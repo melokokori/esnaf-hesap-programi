@@ -343,7 +343,11 @@ class App(ctk.CTk):
         self._satis_yukle()
 
     def _saat_guncelle(self):
-        self.tarih_var.set(datetime.today().strftime("%d.%m.%Y %H:%M"))
+        # Sadece kullanıcı elle değiştirmediyse güncelle
+        mevcut = self.tarih_var.get()
+        beklenen_tarih = datetime.today().strftime("%d.%m.%Y")
+        if mevcut.startswith(beklenen_tarih) or len(mevcut) < 10:
+            self.tarih_var.set(datetime.today().strftime("%d.%m.%Y %H:%M"))
         self.after(10000, self._saat_guncelle)
 
     def _get_markalar(self):
@@ -493,8 +497,8 @@ class App(ctk.CTk):
         elif filtre == "Bu Ay":
             ay = datetime.today().strftime("%m.%Y")
             rows = cur.execute(
-                "SELECT id,tarih,isim,marka,urun_turu,fiyat FROM gunluk_satis WHERE tarih LIKE ? ORDER BY id DESC",
-                (f"%.{ay}%",)).fetchall()
+                "SELECT id,tarih,isim,marka,urun_turu,fiyat FROM gunluk_satis WHERE substr(tarih,4,7)=? ORDER BY id DESC",
+                (ay,)).fetchall()
         else:
             rows = cur.execute(
                 "SELECT id,tarih,isim,marka,urun_turu,fiyat FROM gunluk_satis ORDER BY id DESC").fetchall()
@@ -801,7 +805,11 @@ class App(ctk.CTk):
             os.startfile(dest)
 
     def _kaydet_ve_cik(self):
-        self.con.commit(); self.con.close(); self.destroy()
+        self.con.commit()
+        self.con.close()
+        self.after_cancel("all") if False else None
+        self.quit()
+        self.destroy()
 
     def _arsiv_toggle(self, mid, durum):
         self.con.cursor().execute("UPDATE musteriler SET arsiv=? WHERE id=?", (durum, mid))
