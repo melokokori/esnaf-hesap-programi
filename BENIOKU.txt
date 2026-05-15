@@ -1,0 +1,65 @@
+============================================================
+  ESNAF HESAP PROGRAMI - KURULUM VE KULLANIM KILAVUZU
+  Geliştirici: melokokori | Sürüm 1.0.0
+============================================================
+
+------------------------------------------------------------
+KURULUM
+------------------------------------------------------------
+1. "EsnafHesapProgrami" klasörünü istediğiniz bir yere kopyalayın.
+   (Örnek: C:\EsnafHesap\ veya Masaüstü)
+
+2. Klasörün içindeki "Kisayol Olustur.bat" dosyasına
+   çift tıklayın → masaüstünüzde kısayol oluşur.
+
+3. Artık masaüstündeki kısayola çift tıklayarak
+   programı açabilirsiniz.
+
+NOT: Python kurulumu gerekmez. Program kendi başına çalışır.
+
+------------------------------------------------------------
+İLK AÇILIŞ
+------------------------------------------------------------
+Program ilk açıldığında işletme adınızı girmeniz istenecektir.
+(Örnek: "Ahmet Usta Şarküteri")
+
+Bu isim daha sonra Ayarlar menüsünden değiştirilebilir.
+
+------------------------------------------------------------
+KULLANIM
+------------------------------------------------------------
+MÜŞTERİ HESAPLARI SEKMESİ:
+  • Sol listeden müşteri seçin → sağda detaylar açılır
+  • "+ Yeni Müşteri" ile yeni kayıt ekleyin
+  • "Alışveriş Ekle" veya "Ödeme Ekle" ile işlem girin
+  • Borçlular / Tümü / Arşiv filtresiyle listeleyin
+
+GÜNLÜK SATIŞLAR SEKMESİ:
+  • Tarih, ad soyad, marka, ürün türü ve fiyat girin
+  • "+ Ekle" ile kaydedin
+  • Bugün / Bu Hafta / Bu Ay / Tümü filtreleri kullanılabilir
+  • "Toplu Giriş" ile birden fazla ürünü aynı anda ekleyin
+
+------------------------------------------------------------
+YEDEKLEME
+------------------------------------------------------------
+  • Sol paneldeki "Yedek Al" butonu ile verilerinizi yedekleyin
+  • Yedek dosyası: hesap_yedek_TARIH.db formatında kaydedilir
+  • Geri yüklemek için Ayarlar > Yedek Yükle (Ayarlar menüsü)
+
+  ÖNEMLİ: "hesap.db" dosyası tüm verilerinizi içerir.
+  Bu dosyayı düzenli olarak yedekleyin!
+
+------------------------------------------------------------
+KLAVYE KISAYOLLARI
+------------------------------------------------------------
+  Ctrl + S  →  Verileri kaydet
+  Ctrl + R  →  Excel rapor al
+  Ctrl + H  →  Hakkında
+
+------------------------------------------------------------
+TEKNİK DESTEK
+------------------------------------------------------------
+  GitHub: https://github.com/melokokori/esnaf-hesap-programi
+
+============================================================
