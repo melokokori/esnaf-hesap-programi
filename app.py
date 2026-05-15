@@ -1,7 +1,10 @@
 import customtkinter as ctk
-import sqlite3, os, sys
-from tkinter import ttk, messagebox, StringVar
+import sqlite3, os, sys, shutil
+from tkinter import ttk, messagebox, StringVar, filedialog
 from datetime import datetime
+
+VERSION = "1.0.0"
+COPYRIGHT = "© 2025 melokokori"
 
 if getattr(sys, "frozen", False):
     BASE_DIR = os.path.dirname(sys.executable)
@@ -13,6 +16,29 @@ XLS_PATH = os.path.join(BASE_DIR, "..", "nevinbebe_ozet.xlsx")
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
+
+
+def show_splash():
+    splash = ctk.CTk()
+    splash.overrideredirect(True)
+    splash.configure(fg_color="#2F5496")
+    w, h = 440, 220
+    sw = splash.winfo_screenwidth()
+    sh = splash.winfo_screenheight()
+    splash.geometry(f"{w}x{h}+{(sw-w)//2}+{(sh-h)//2}")
+
+    ctk.CTkLabel(splash, text="Esnaf Hesap Programı",
+                 font=ctk.CTkFont(size=24, weight="bold"),
+                 text_color="white").pack(expand=True, pady=(40, 4))
+    ctk.CTkLabel(splash, text=f"Sürüm {VERSION}",
+                 font=ctk.CTkFont(size=13),
+                 text_color="#BDD7EE").pack()
+    ctk.CTkLabel(splash, text=COPYRIGHT,
+                 font=ctk.CTkFont(size=11),
+                 text_color="#8FB4D4").pack(pady=(4, 40))
+
+    splash.after(2500, splash.destroy)
+    splash.mainloop()
 
 # ── VERİTABANI ────────────────────────────────────────────────
 def init_db():
@@ -121,8 +147,19 @@ class App(ctk.CTk):
         self.load_customers()
         if not self._isletme or self._isletme == "Hesap Programı":
             self.after(200, self._ilk_kurulum)
+        self.bind("<Control-s>", lambda _: self._sessiz_kaydet())
+        self.bind("<Control-r>", lambda _: self._rapor_excel())
+        self.bind("<Control-h>", lambda _: self._hakkinda())
 
     def _build_ui(self):
+        sb = ctk.CTkFrame(self, height=22, corner_radius=0, fg_color="#DDEEFF")
+        sb.pack(fill="x", side="bottom")
+        sb.pack_propagate(False)
+        ctk.CTkLabel(sb, text=f"{COPYRIGHT}  |  v{VERSION}",
+                     font=ctk.CTkFont(size=10), text_color="#5577AA").pack(side="right", padx=14)
+        ctk.CTkLabel(sb, text="Ctrl+S: Kaydet   Ctrl+R: Rapor   Ctrl+H: Hakkında",
+                     font=ctk.CTkFont(size=10), text_color="#8899AA").pack(side="left", padx=14)
+
         self.tabs = ctk.CTkTabview(self, anchor="nw")
         self.tabs.pack(fill="both", expand=True)
         self.tabs.add("📋  Müşteri Hesapları")
@@ -181,11 +218,27 @@ class App(ctk.CTk):
 
         ctk.CTkButton(self.left, text="+ Yeni Müşteri", height=36,
                       command=self.new_customer).pack(padx=12, pady=(8,4), fill="x")
-        ctk.CTkButton(self.left, text="⚙  Ayarlar", height=36,
+
+        row1 = ctk.CTkFrame(self.left, fg_color="transparent")
+        row1.pack(fill="x", padx=12, pady=(0,4))
+        ctk.CTkButton(row1, text="📊 Rapor Al", height=34, width=10,
+                      fg_color="#217346",
+                      command=self._rapor_excel).pack(side="left", expand=True, fill="x", padx=(0,3))
+        ctk.CTkButton(row1, text="💾 Yedek Al", height=34, width=10,
+                      fg_color="#ED7D31",
+                      command=self._yedek_al).pack(side="left", expand=True, fill="x", padx=(3,0))
+
+        row2 = ctk.CTkFrame(self.left, fg_color="transparent")
+        row2.pack(fill="x", padx=12, pady=(0,4))
+        ctk.CTkButton(row2, text="⚙ Ayarlar", height=34, width=10,
                       fg_color="#5B5B5B",
-                      command=self._ayarlar).pack(padx=12, pady=(0,4), fill="x")
+                      command=self._ayarlar).pack(side="left", expand=True, fill="x", padx=(0,3))
+        ctk.CTkButton(row2, text="ℹ Hakkında", height=34, width=10,
+                      fg_color="#5B5B5B",
+                      command=self._hakkinda).pack(side="left", expand=True, fill="x", padx=(3,0))
+
         ctk.CTkButton(self.left, text="💾  Kaydet ve Çık", height=36,
-                      fg_color="#5B5B5B",
+                      fg_color="#2F5496",
                       command=self._kaydet_ve_cik).pack(padx=12, pady=(0,10), fill="x")
 
         self.right = ctk.CTkFrame(parent, corner_radius=8, fg_color="#F5F5F5")
@@ -615,6 +668,138 @@ class App(ctk.CTk):
         ctk.CTkButton(frame, text="Kaydet", command=kaydet).grid(
             row=1, column=0, columnspan=2, pady=14, sticky="ew")
 
+    def _sessiz_kaydet(self):
+        self.con.commit()
+
+    def _hakkinda(self):
+        dlg = ctk.CTkToplevel(self)
+        dlg.title("Hakkında")
+        dlg.geometry("360x300"); dlg.grab_set(); dlg.resizable(False, False)
+        ctk.CTkLabel(dlg, text="Esnaf Hesap Programı",
+                     font=ctk.CTkFont(size=17, weight="bold")).pack(pady=(30,4))
+        ctk.CTkLabel(dlg, text=f"Sürüm {VERSION}",
+                     font=ctk.CTkFont(size=12), text_color="#555555").pack()
+        ctk.CTkFrame(dlg, height=1, fg_color="#CCCCCC").pack(fill="x", padx=36, pady=18)
+        ctk.CTkLabel(dlg, text=COPYRIGHT,
+                     font=ctk.CTkFont(size=13, weight="bold")).pack()
+        ctk.CTkLabel(dlg, text="Tüm hakları saklıdır.",
+                     font=ctk.CTkFont(size=11), text_color="#666666").pack(pady=(2,8))
+        ctk.CTkLabel(dlg, text="Bu yazılım izinsiz kopyalanamaz ve dağıtılamaz.",
+                     font=ctk.CTkFont(size=10), text_color="#999999", wraplength=280).pack()
+        ctk.CTkButton(dlg, text="Kapat", width=120,
+                      command=dlg.destroy).pack(pady=22)
+
+    def _yedek_al(self):
+        now = datetime.today().strftime("%Y%m%d_%H%M")
+        dest = filedialog.asksaveasfilename(
+            defaultextension=".db",
+            filetypes=[("Veritabanı Yedeği", "*.db"), ("Tümü", "*.*")],
+            initialfile=f"hesap_yedek_{now}.db",
+            title="Yedeği Kaydet"
+        )
+        if not dest:
+            return
+        self.con.commit()
+        shutil.copy2(DB_PATH, dest)
+        messagebox.showinfo("Yedek Alındı", f"Yedek başarıyla kaydedildi:\n{dest}")
+
+    def _yedek_yukle(self):
+        src = filedialog.askopenfilename(
+            filetypes=[("Veritabanı Yedeği", "*.db"), ("Tümü", "*.*")],
+            title="Geri Yüklenecek Yedeği Seç"
+        )
+        if not src:
+            return
+        if not messagebox.askyesno("Emin misiniz?",
+                "Mevcut tüm veriler seçilen yedekle değiştirilecek.\nBu işlem geri alınamaz. Devam edilsin mi?"):
+            return
+        self.con.close()
+        shutil.copy2(src, DB_PATH)
+        self.con = sqlite3.connect(DB_PATH)
+        self._show_placeholder()
+        self.load_customers()
+        messagebox.showinfo("Geri Yüklendi", "Yedek başarıyla geri yüklendi.")
+
+    def _rapor_excel(self):
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+
+        file_now = datetime.today().strftime("%Y%m%d_%H%M")
+        dest = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Excel Dosyası", "*.xlsx")],
+            initialfile=f"hesap_raporu_{file_now}.xlsx",
+            title="Raporu Kaydet"
+        )
+        if not dest:
+            return
+
+        wb = openpyxl.Workbook()
+
+        def baslik_stili(ws, renk):
+            for cell in ws[1]:
+                cell.font = Font(bold=True, color="FFFFFF", size=11)
+                cell.fill = PatternFill("solid", fgColor=renk)
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            ws.row_dimensions[1].height = 20
+
+        # ── Sayfa 1: Borçlu Müşteriler ──
+        ws1 = wb.active
+        ws1.title = "Borçlu Müşteriler"
+        ws1.append(["Müşteri Adı", "Telefon", "Borç (TL)"])
+        baslik_stili(ws1, "2F5496")
+        rows1 = self.con.cursor().execute("""
+            SELECT m.musteri_adi, COALESCE(NULLIF(m.telefon,'nan'),''),
+                   COALESCE((SELECT kalan FROM islemler WHERE musteri_id=m.id ORDER BY id DESC LIMIT 1),0) AS kalan
+            FROM musteriler m WHERE m.arsiv=0
+            ORDER BY kalan DESC, m.musteri_adi
+        """).fetchall()
+        toplam = 0.0
+        for ad, tel, kalan in rows1:
+            if kalan > 0:
+                ws1.append([ad, tel, round(kalan, 2)])
+                toplam += kalan
+        ws1.append(["", "TOPLAM", round(toplam, 2)])
+        for cell in ws1[ws1.max_row]:
+            cell.font = Font(bold=True, size=11)
+        for col, w in [("A", 32), ("B", 18), ("C", 16)]:
+            ws1.column_dimensions[col].width = w
+
+        # ── Sayfa 2: Günlük Satışlar ──
+        ws2 = wb.create_sheet("Günlük Satışlar")
+        ws2.append(["Tarih", "Ad Soyad", "Marka", "Ürün Türü", "Fiyat (TL)"])
+        baslik_stili(ws2, "217346")
+        rows2 = self.con.cursor().execute(
+            "SELECT tarih, isim, marka, urun_turu, fiyat FROM gunluk_satis ORDER BY id DESC"
+        ).fetchall()
+        s_toplam = 0.0
+        for r in rows2:
+            ws2.append(list(r))
+            s_toplam += r[4]
+        ws2.append(["", "", "", "TOPLAM", round(s_toplam, 2)])
+        for cell in ws2[ws2.max_row]:
+            cell.font = Font(bold=True, size=11)
+        for col, w in [("A", 18), ("B", 28), ("C", 20), ("D", 20), ("E", 15)]:
+            ws2.column_dimensions[col].width = w
+
+        # ── Sayfa 3: Tüm İşlemler ──
+        ws3 = wb.create_sheet("Müşteri İşlemleri")
+        ws3.append(["Müşteri", "Tarih", "Açıklama", "Alışveriş (TL)", "Ödenen (TL)", "Kalan (TL)"])
+        baslik_stili(ws3, "5B5B5B")
+        rows3 = self.con.cursor().execute("""
+            SELECT m.musteri_adi, i.tarih, i.aciklama, i.fiyat, i.odenen, i.kalan
+            FROM islemler i JOIN musteriler m ON m.id=i.musteri_id
+            ORDER BY m.musteri_adi, i.id
+        """).fetchall()
+        for r in rows3:
+            ws3.append(list(r))
+        for col, w in [("A", 28), ("B", 14), ("C", 26), ("D", 16), ("E", 16), ("F", 16)]:
+            ws3.column_dimensions[col].width = w
+
+        wb.save(dest)
+        if messagebox.askyesno("Rapor Hazır", f"Rapor kaydedildi.\nExcel'de açmak ister misiniz?"):
+            os.startfile(dest)
+
     def _kaydet_ve_cik(self):
         self.con.commit(); self.con.close(); self.destroy()
 
@@ -798,6 +983,7 @@ class App(ctk.CTk):
 
 # ── BAŞLANGIÇ ─────────────────────────────────────────────────
 if __name__ == "__main__":
+    show_splash()
     con   = init_db()
     count = con.cursor().execute("SELECT COUNT(*) FROM musteriler").fetchone()[0]
     if count == 0:
